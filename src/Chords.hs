@@ -54,11 +54,12 @@ data Fingering = Fingering {
 showFingeringRow :: Int -> Fingering -> String
 showFingeringRow row (Fingering fingers fretboard) =
   intercalate " " $ (\case
+      Just finger | row == 0 -> "-"
       Just finger | finger == row -> "*"
       _ -> "|"
   ) <$> fingers
 
-
+-- | What are the top and bottom fingers in this chord?
 minMaxFingers :: Fingering -> (Int, Int)
 minMaxFingers (Fingering fingers fretboard) =
   let
@@ -85,6 +86,7 @@ instance Show Fingering where
 -- C --------------    -> C
 -- G --------------    -> G
 
+-- | Does this fingering produce this chord?
 isChord :: Chord -> Fingering -> Bool
 isChord chord (Fingering fingers frets) =
   let
@@ -93,36 +95,58 @@ isChord chord (Fingering fingers frets) =
   in
     S.fromList chord == S.fromList (catMaybes maybeNote)
 
-isChordPossible :: Chord -> (Int, Int) -> Fretboard -> Bool
-isChordPossible chord interval@(mi, ma) frets = and (okayNote chord interval <$> frets)
-  
+-- | Can a string produce a certain note when a finger only lands within a certain interval?
+-- | Note -- this assumes that the string is _not_ muted, it _must_ produce a sound.
 okayNote :: Chord -> (Int, Int) -> Fret -> Bool
 okayNote chord interval@(mi, ma) fret =
   let
-    everyPossibleNote = S.fromList $ (flip incNote $ (fretZero fret)) <$> [mi..ma]
+    everyPossibleNote = S.fromList $ (flip incNote $ (fretZero fret)) <$> 0:[mi..ma]
     everyNeededNote = S.fromList chord
   in
     not . null $ everyNeededNote `S.intersection` everyPossibleNote
 
-cartesianChordOn :: (Int, Int) -> Chord -> Fretboard -> [Fingering]
-cartesianChordOn interval@(mi, ma) chord frets =
-  let
-    unorderedIncrementList = (\fret -> validNoteIncrements interval chord (fretZero fret)) <$> frets
-    cartesianIncrements = sequence unorderedIncrementList
-  in
-    (\fingers -> Fingering (Just <$> fingers) frets) <$> cartesianIncrements
-  where
-    validNoteIncrements :: (Int, Int) -> Chord -> Note -> [Int]
-    validNoteIncrements (mi, ma) chord basenote = filter (\inc -> (incNote inc basenote) `elem` chord) [mi..ma]
-  
+-- | Can we produce a chord within some interval of fingering?
+isChordPossible :: Chord -> (Int, Int) -> Fretboard -> Int -> Bool
+isChordPossible chord interval@(mi, ma) frets maximumMutes = (length $ filter not (okayNote chord interval <$> frets)) <= maximumMutes
 
+-- | If there's a version of `specific` in the list of fingerings
+-- | that _isn't_ muted as much, then the more muted version is redundant.
+isntRedundant :: [[Maybe Int]] -> [Maybe Int] -> Bool
+isntRedundant (c:cartesian) specific = (not $ any (\case { (Just _, Nothing) -> True; _ -> False }) (zip c specific)) && isntRedundant cartesian specific
+isntRedundant [] specific = True
+
+-- | Give me all the ways to produce a chord within this interval, including leaving an open string.
+cartesianChordOn :: (Int, Int) -> Int -> Chord -> Fretboard -> [Fingering]
+cartesianChordOn interval@(mi, ma) maxMutes chord frets =
+  let
+    -- We leave the opportunity for this string to possibly be muted.
+    unorderedIncrementList = (\fret -> (validNoteIncrements chord (fretZero fret))) <$> frets
+    -- Then we filter to make sure that _too_ many strings aren't muted.
+    -- An interesting edge case -- a completely muted instrument can sound like any chord ;)
+    cartesianIncrements = filter (\fs -> (length fs) - (length $ catMaybes fs) <= maxMutes) $ sequence unorderedIncrementList
+    -- Now, we remove all the fingerings that have a mute but really shouldn't
+    -- This runs in O(n^2) time & space but it shouldn't matter because chords only have ~100 fingerings
+    -- If it's ever a problem, though, refactor this!!
+    minMuteIncrements = filter (isntRedundant cartesianIncrements) cartesianIncrements
+  in
+    (\fingers -> Fingering fingers frets) <$> minMuteIncrements
+  where
+    -- The muted string is _always_ valid
+    validNoteIncrements :: Chord -> Note -> [Maybe Int]
+    validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> (incNote inc basenote) `elem` chord) (nub $ 0:[mi..ma]))
+
+
+  
+-- | Give me all the ways to produce a chord, when my fingers can only stretch so far.
 search :: Chord -> Int -> Fretboard -> [Fingering]
 search chord maxInterval frets =
   let
+    maxMutes = length frets `div` 4
     -- TODO: CHANGE THIS LINE
-    okayIntervals = filter (\interval -> isChordPossible chord interval frets) $ zip [0 .. ((fretLength $ head frets) - maxInterval)] [maxInterval .. (fretLength $ head frets)]
+    intervals = zip [0 .. ((fretLength $ head frets) - maxInterval)] [maxInterval .. (fretLength $ head frets)]
+    okayIntervals = filter (\interval -> isChordPossible chord interval frets maxMutes) $ intervals
   in
-    (\interval -> cartesianChordOn interval chord frets) =<< okayIntervals
+    (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
 
 guitar :: Fretboard
 guitar = ($ 16) <$> [Fret E, Fret A, Fret D, Fret G, Fret B, Fret E]
