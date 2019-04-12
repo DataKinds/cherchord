@@ -81,6 +81,9 @@ instance Show Fingering where
     in
       unlines (noteHeader:muteHeader:strings)
 
+instance Eq Fingering where
+  (==) (Fingering fingers frets) (Fingering fingers' frets') = fingers == fingers'
+
 -- A ---------------*- -> c
 -- E --------------    -> E
 -- C --------------    -> C
@@ -154,7 +157,7 @@ search chord maxInterval frets =
     intervals = zip [0 .. ((fretLength $ head frets) - maxInterval)] [maxInterval .. (fretLength $ head frets)]
     okayIntervals = filter (\interval -> isChordPossible chord interval frets maxMutes) $ intervals
   in
-    filter (not . isAwkward) $ (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
+    nub $ filter (not . isAwkward) $ (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
 
 guitar :: Fretboard
 guitar = ($ 16) <$> [Fret E, Fret A, Fret D, Fret G, Fret B, Fret E]
