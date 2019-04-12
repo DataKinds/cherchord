@@ -135,6 +135,14 @@ cartesianChordOn interval@(mi, ma) maxMutes chord frets =
     validNoteIncrements :: Chord -> Note -> [Maybe Int]
     validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> (incNote inc basenote) `elem` chord) (nub $ 0:[mi..ma]))
 
+-- | Is this fingering kinda too awkward to do?
+-- | Right now, the only criteria is that it has a mute surrounded by non-zero fingerings
+isAwkward :: Fingering -> Bool
+isAwkward (Fingering ((Just f1):Nothing:(Just f2):fs) fb)
+  | f1 == 0 || f2 == 0 = isAwkward (Fingering (Nothing:(Just f2):fs) fb)
+  | otherwise = True
+isAwkward (Fingering (f:fs) fb) = isAwkward (Fingering fs fb)
+isAwkward (Fingering [] fb) = False
 
   
 -- | Give me all the ways to produce a chord, when my fingers can only stretch so far.
@@ -146,7 +154,7 @@ search chord maxInterval frets =
     intervals = zip [0 .. ((fretLength $ head frets) - maxInterval)] [maxInterval .. (fretLength $ head frets)]
     okayIntervals = filter (\interval -> isChordPossible chord interval frets maxMutes) $ intervals
   in
-    (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
+    filter (not . isAwkward) $ (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
 
 guitar :: Fretboard
 guitar = ($ 16) <$> [Fret E, Fret A, Fret D, Fret G, Fret B, Fret E]
