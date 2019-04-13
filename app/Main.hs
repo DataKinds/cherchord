@@ -51,10 +51,25 @@ parseChord = do
     "aug" -> return $ aug note
 
 parseOptions :: Parser AppOptions
-parseOptions = AppOptions <$> strArgument (metavar "CHORD") <*> pure 3 <*> pure 1000
+parseOptions = AppOptions <$>
+  strArgument (metavar "CHORD") <*>
+  Options.Applicative.option auto (
+    long "finger-stretch" <>
+    short 'f' <>
+    value 3 <>
+    showDefault <>
+    metavar "FRETS" <>
+    help "How far can your fingers stretch?") <*>
+  Options.Applicative.option auto (
+    long "print-n" <>
+    short 'p' <>
+    value 10000 <>
+    showDefault <>
+    metavar "FINGERINGS" <>
+    help "How many fingerings to print?")
 
 parserInfoOptions :: ParserInfo AppOptions
-parserInfoOptions = info parseOptions (
+parserInfoOptions = info (helper <*> parseOptions) (
   fullDesc <>
   progDesc "Searches for chord fingering on a given instrument." <>
   header "chord-finder -- find your fingers")
