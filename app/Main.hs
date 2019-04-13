@@ -1,3 +1,5 @@
+{-# LANGUAGE ApplicativeDo #-}
+
 module Main where
 
 import Chords
@@ -6,10 +8,18 @@ import Text.Megaparsec.Debug
 import Text.Megaparsec.Char
 import Data.Void
 import System.IO
+import Options.Applicative
+import Data.Semigroup ((<>))
 
-type Parser = Parsec Void String
+type InputParser = Parsec Void String
+data AppOptions = AppOptions {
+  chordIn :: String,
+  fingerStretch :: Int,
+  amountToPrint :: Int
+}
 
-parseNote :: Parser Note
+
+parseNote :: InputParser Note
 parseNote = foldr1 (<|>) $ try <$> [
   string "Ab" >> return Ab,
   string "A" >> return A,
@@ -23,30 +33,36 @@ parseNote = foldr1 (<|>) $ try <$> [
   string "Gb" >> return Gb,
   string "G" >> return G]
 
-parseModifier :: Parser String
-parseModifier = foldr1 (<|>) $ try <$> [
+parseKey :: InputParser String
+parseKey = foldr1 (<|>) $ try <$> [
   string "maj",
   string "min",
   string "dim",
   string "aug"]
 
-parseChord :: Parser Chord
+parseChord :: InputParser Chord
 parseChord = do
   note <- parseNote
-  modifier <- parseModifier
-  case modifier of
+  key <- parseKey
+  case key of
     "maj" -> return $ maj note
     "min" -> return $ Chords.min note
     "dim" -> return $ dim note
     "aug" -> return $ aug note
-  
+
+parseOptions :: Parser AppOptions
+parseOptions = AppOptions <$> strArgument (metavar "CHORD") <*> pure 3 <*> pure 1000
+
+parserInfoOptions :: ParserInfo AppOptions
+parserInfoOptions = info parseOptions (
+  fullDesc <>
+  progDesc "Searches for chord fingering on a given instrument." <>
+  header "chord-finder -- find your fingers")
+
 main :: IO ()
 main = do
-  putStr "type a chord> "
-  hFlush stdout
-  input <- getLine
-  case parse parseChord "interactive" input of
+  opts <- execParser parserInfoOptions
+  case parse parseChord "interactive" (chordIn opts) of
     Left bundle -> putStrLn (errorBundlePretty bundle)
     Right chord -> do
-      mapM_ (putStrLn . show) $ search chord 3 guitar
-      main
+      mapM_ (putStrLn . show) $ search chord (fingerStretch opts) guitar

@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - containers
 - megaparsec
+- optparse-applicative
 
 library:
   source-dirs: src
