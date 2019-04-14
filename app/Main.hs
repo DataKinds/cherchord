@@ -116,7 +116,7 @@ parseOptions = AppOptions <$>
 parserInfoOptions :: ParserInfo AppOptions
 parserInfoOptions = info (helper <*> parseOptions) (
   fullDesc <>
-  progDesc "Searches for chord fingering on a given instrument." <>
+  progDesc "Searches for chord fingerings on a given instrument." <>
   header "chord-finder -- find your fingers")
 
 horizConcat :: [String] -> String
