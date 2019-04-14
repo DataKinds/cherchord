@@ -27,6 +27,7 @@ parseNote = foldr1 (<|>) $ try <$> [
   string "Ab" >> return Ab,
   string "A" >> return A,
   string "Bb" >> return Bb,
+  string "B" >> return B,
   string "C" >> return C,
   string "Db" >> return Db,
   string "D" >> return D,
@@ -114,10 +115,11 @@ parseOptions = AppOptions <$>
     help "What instrument to show chord diagrams for? Valid instruments are: guitar, ukulele, or a comma-delimited list of notes followed by numbers.\nExample: a guitar can be defined as E16,A16,D16,G16,B16,E16.")
 
 parserInfoOptions :: ParserInfo AppOptions
-parserInfoOptions = info (helper <*> parseOptions) (
+parserInfoOptions = info (parseOptions <**> helper) (
   fullDesc <>
   progDesc "Searches for chord fingerings on a given instrument." <>
-  header "chord-finder -- find your fingers")
+  header "cherchord -- find your fingers" <>
+  footer "cherchord v1.0.0.0 (c) 2019 https://github.com/aearnus/cherchord")
 
 horizConcat :: [String] -> String
 horizConcat = foldr1 horizConcatOne
