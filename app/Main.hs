@@ -18,7 +18,8 @@ type InputParser = Parsec Void String
 data AppOptions = AppOptions {
   chordIn :: String,
   fingerStretch :: Int,
-  amountToPrint :: Int
+  amountToPrint :: Int,
+  instrument :: Fretboard
 }
 
 parseNote :: InputParser Note
@@ -68,6 +69,24 @@ parseModifiedChord = do
       string "add"
       num <- Text.Megaparsec.some digitChar
       return $ add (read num)
+
+validInstruments :: String -> Either String Fretboard
+validInstruments "guitar" = Right guitar
+validInstruments "ukulele" = Right ukulele
+validInstruments i =
+  case parse parseInstrument "instrument" i of
+    Left bundle -> Left "Valid instruments are: guitar, ukulele"
+    Right fretboard -> Right fretboard
+  where
+    parseInstrument :: InputParser Fretboard
+    parseInstrument = do
+      let parseFret = do
+            note <- parseNote
+            num <- Text.Megaparsec.some digitChar
+            optional $ char ','
+            return $ Fret note (read num)
+      frets <- Text.Megaparsec.some parseFret
+      return frets
       
 parseOptions :: Parser AppOptions
 parseOptions = AppOptions <$>
@@ -85,7 +104,14 @@ parseOptions = AppOptions <$>
     value 10000 <>
     showDefault <>
     metavar "FINGERINGS" <>
-    help "How many fingerings to print?")
+    help "How many fingerings to print?") <*>
+  Options.Applicative.option (eitherReader validInstruments) (
+    long "instrument" <>
+    short 'i' <>
+    value guitar <>
+    showDefault <>
+    metavar "INSTRUMENT" <>
+    help "What instrument to show chord diagrams for? Valid instruments are: guitar, ukulele, or a comma-delimited list of notes followed by numbers.\nExample: a guitar can be defined as E16,A16,D16,G16,B16,E16.")
 
 parserInfoOptions :: ParserInfo AppOptions
 parserInfoOptions = info (helper <*> parseOptions) (
@@ -116,10 +142,10 @@ horizConcat = foldr1 horizConcatOne
 main :: IO ()
 main = do
   opts <- execParser parserInfoOptions
-  case parse parseModifiedChord "interactive" (chordIn opts) of
+  case parse parseModifiedChord "chord" (chordIn opts) of
     Left bundle -> putStrLn (errorBundlePretty bundle)
     Right chord -> do
-      let chords = search chord (fingerStretch opts) guitar
+      let chords = search chord (fingerStretch opts) (instrument opts)
       setSGR [SetColor Foreground Dull Blue]
       putStr "found "
       setSGR [SetColor Foreground Vivid Blue]

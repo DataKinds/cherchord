@@ -36,6 +36,9 @@ data Fret = Fret {
 
 type Fretboard = [Fret]
 
+instance Show Fret where
+  show (Fret zero len) = (show zero) ++ (show len)
+
 data Fingering = Fingering {
   fingerPos :: [Maybe Int],
   fingerFrets :: Fretboard
