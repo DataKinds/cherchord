@@ -25,6 +25,7 @@ dependencies:
 - megaparsec
 - optparse-applicative
 - split
+- ansi-terminal
 
 library:
   source-dirs: src

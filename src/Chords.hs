@@ -44,7 +44,7 @@ data Fingering = Fingering {
 showFingeringRow :: Int -> Fingering -> String
 showFingeringRow row (Fingering fingers fretboard) =
   intercalate " " $ (\case
-      Just finger | row == 0 -> "-"
+      _ | row == 0 -> "-"
       Just finger | finger == row -> "*"
       _ -> "|"
   ) <$> fingers
@@ -54,7 +54,7 @@ minMaxFingers :: Fingering -> (Int, Int)
 minMaxFingers (Fingering fingers fretboard) =
   let
     justFingers = catMaybes fingers
-    ms@(mi,ma) = (minimum justFingers, maximum justFingers)
+    ms@(mi,ma) = (max 0 (minimum justFingers - 1), maximum justFingers + 1)
   in
     if (ma - mi) < 4 then (mi, mi + 3) else ms
 
@@ -181,6 +181,3 @@ guitar = ($ 16) <$> [Fret E, Fret A, Fret D, Fret G, Fret B, Fret E]
 
 ukulele :: Fretboard
 ukulele = ($ 14) <$> [Fret G, Fret C, Fret E, Fret A]
-
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"

@@ -12,6 +12,7 @@ import Data.List.Split
 import System.IO
 import Options.Applicative
 import Data.Semigroup ((<>))
+import System.Console.ANSI
 
 type InputParser = Parsec Void String
 data AppOptions = AppOptions {
@@ -95,18 +96,20 @@ parserInfoOptions = info (helper <*> parseOptions) (
 horizConcat :: [String] -> String
 horizConcat = foldr1 horizConcatOne
   where
-    rectangular :: String -> String
-    rectangular s =
+    rectangular :: Int -> String -> String
+    rectangular height s =
       let
         maxLine = maximum $ length <$> lines s
+        heightDiff = max 0 (height - (length . lines $ s))
       in
-        unlines $ (\line -> line ++ replicate (maxLine - length line) ' ') <$> lines s
+        unlines $ (\line -> line ++ replicate (maxLine - length line) ' ') <$> (lines s ++ replicate heightDiff "") 
     
     horizConcatOne :: String -> String -> String
     horizConcatOne str1 str2 =
       let
-        str1' = lines . rectangular $ str1
-        str2' = lines . rectangular $ str2
+        height = max (length . lines $ str1) (length . lines $ str2)
+        str1' = lines . rectangular height $ str1
+        str2' = lines . rectangular height $ str2
       in
         unlines $ zipWith (\s1 s2 -> s1 ++ "  " ++ s2) str1' str2'
 
@@ -116,4 +119,17 @@ main = do
   case parse parseModifiedChord "interactive" (chordIn opts) of
     Left bundle -> putStrLn (errorBundlePretty bundle)
     Right chord -> do
-      putStrLn . intercalate "\n" . map horizConcat . chunksOf 3 . map show . take (amountToPrint opts) $ search chord (fingerStretch opts) guitar
+      let chords = search chord (fingerStretch opts) guitar
+      setSGR [SetColor Foreground Dull Blue]
+      putStr "found "
+      setSGR [SetColor Foreground Vivid Blue]
+      putStr . show $ length chords
+      setSGR [SetColor Foreground Dull Blue]
+      putStr " unique fingerings for the chord "
+      setSGR [SetColor Foreground Vivid Blue]
+      putStr (chordIn opts)
+      putStrLn . (\s -> " (" ++ s ++ ")") . show $ upperNotes chord
+      setSGR [SetColor Foreground Dull Blue]
+      putStrLn $ "printing out " ++ show (Prelude.min (amountToPrint opts) (length chords)) ++ " of them...\n"
+      setSGR [Reset]
+      putStrLn . intercalate "\n" . map horizConcat . chunksOf 3 . map show . take (amountToPrint opts) $ chords
