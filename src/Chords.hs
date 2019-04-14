@@ -9,8 +9,13 @@ import Data.Maybe
 import qualified Data.Set as S
 import Debug.Trace
 
+-- ## DECLARATIONS ## --
+
 data Note = Ab | A | Bb | B | C | Db | D | Eb | E | F | Gb | G deriving (Show, Eq, Ord, Data)
-type Chord = [Note]
+data Chord = Chord {
+  baseNote :: Note,
+  upperNotes :: [Note]
+}
 
 instance Enum Note where
   toEnum n =
@@ -23,21 +28,6 @@ instance Enum Note where
         noteConstr = toConstr note
     in
       head $ elemIndices noteConstr constrs
-
-incNote :: Int -> Note -> Note
-incNote n = foldr (.) id $ replicate n succ
-
-maj :: Note -> Chord
-maj note = ($ note) <$> [id, succ . succ . succ . succ, succ . succ . succ . succ . succ . succ . succ]
-
-min :: Note -> Chord
-min note = ($ note) <$> [id, succ . succ . succ, succ . succ . succ . succ . succ . succ . succ]
-
-aug :: Note -> Chord
-aug note = ($ note) <$> [id, succ . succ . succ . succ, succ . succ . succ . succ . succ . succ . succ . succ]
-
-dim :: Note -> Chord
-dim note = ($ note) <$> [id, succ . succ . succ, succ . succ . succ . succ . succ . succ]
 
 data Fret = Fret {
   fretZero :: Note,
@@ -84,10 +74,37 @@ instance Show Fingering where
 instance Eq Fingering where
   (==) (Fingering fingers frets) (Fingering fingers' frets') = fingers == fingers'
 
+
+-- ## CONSTRUCTORS ## --
+
+incNote :: Int -> Note -> Note
+incNote n = foldr (.) id $ replicate n succ
+
+maj :: Note -> Chord
+maj note = Chord note $ (flip incNote $ note) <$> [0, 4, 7]
+
+min :: Note -> Chord
+min note = Chord note $ (flip incNote $ note) <$> [0, 3, 7]
+
+aug :: Note -> Chord
+aug note = Chord note $ (flip incNote $ note) <$> [0, 4, 8]
+
+dim :: Note -> Chord
+dim note = Chord note $ (flip incNote $ note) <$> [0, 3, 6]
+
+
+slash :: Note -> Chord -> Chord
+slash note (Chord base upper) = Chord base (note:upper)
+
+add :: Int -> Chord -> Chord
+add num (Chord base upper) = Chord base (upper ++ [incNote num base])
+
 -- A ---------------*- -> c
 -- E --------------    -> E
 -- C --------------    -> C
 -- G --------------    -> G
+
+-- ## SEARCH FUNCTIONS ## --
 
 -- | Does this fingering produce this chord?
 isChord :: Chord -> Fingering -> Bool
@@ -96,7 +113,7 @@ isChord chord (Fingering fingers frets) =
     noteWithStatus = zip fingers (fretZero <$> frets)
     maybeNote = (\(finger', base) -> finger' >>= (\finger -> Just $ incNote finger base)) <$> noteWithStatus
   in
-    S.fromList chord == S.fromList (catMaybes maybeNote)
+    S.fromList (upperNotes chord) == S.fromList (catMaybes maybeNote)
 
 -- | Can a string produce a certain note when a finger only lands within a certain interval?
 -- | Note -- this assumes that the string is _not_ muted, it _must_ produce a sound.
@@ -104,7 +121,7 @@ okayNote :: Chord -> (Int, Int) -> Fret -> Bool
 okayNote chord interval@(mi, ma) fret =
   let
     everyPossibleNote = S.fromList $ (flip incNote $ (fretZero fret)) <$> 0:[mi..ma]
-    everyNeededNote = S.fromList chord
+    everyNeededNote = S.fromList (upperNotes chord)
   in
     not . null $ everyNeededNote `S.intersection` everyPossibleNote
 
@@ -136,7 +153,7 @@ cartesianChordOn interval@(mi, ma) maxMutes chord frets =
   where
     -- The muted string is _always_ valid
     validNoteIncrements :: Chord -> Note -> [Maybe Int]
-    validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> (incNote inc basenote) `elem` chord) (nub $ 0:[mi..ma]))
+    validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> (incNote inc basenote) `elem` (upperNotes chord)) (nub $ 0:[mi..ma]))
 
 -- | Is this fingering kinda too awkward to do?
 -- | Right now, the only criteria is that it has a mute surrounded by non-zero fingerings

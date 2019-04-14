@@ -7,6 +7,8 @@ import Text.Megaparsec
 import Text.Megaparsec.Debug
 import Text.Megaparsec.Char
 import Data.Void
+import Data.List
+import Data.List.Split
 import System.IO
 import Options.Applicative
 import Data.Semigroup ((<>))
@@ -17,7 +19,6 @@ data AppOptions = AppOptions {
   fingerStretch :: Int,
   amountToPrint :: Int
 }
-
 
 parseNote :: InputParser Note
 parseNote = foldr1 (<|>) $ try <$> [
@@ -40,8 +41,8 @@ parseKey = foldr1 (<|>) $ try <$> [
   string "dim",
   string "aug"]
 
-parseChord :: InputParser Chord
-parseChord = do
+parseBaseChord :: InputParser Chord
+parseBaseChord = do
   note <- parseNote
   key <- parseKey
   case key of
@@ -50,6 +51,23 @@ parseChord = do
     "dim" -> return $ dim note
     "aug" -> return $ aug note
 
+parseModifiedChord :: InputParser Chord
+parseModifiedChord = do
+  base <- parseBaseChord
+  modifiers <- Text.Megaparsec.many (try parseSlash <|> try parseAdd)
+  return $ (foldr (.) id modifiers) base
+  where
+    parseSlash :: InputParser (Chord -> Chord)
+    parseSlash = do
+      string "/"
+      note <- parseNote
+      return $ slash note
+    parseAdd :: InputParser (Chord -> Chord)
+    parseAdd = do
+      string "add"
+      num <- Text.Megaparsec.some digitChar
+      return $ add (read num)
+      
 parseOptions :: Parser AppOptions
 parseOptions = AppOptions <$>
   strArgument (metavar "CHORD") <*>
@@ -74,10 +92,28 @@ parserInfoOptions = info (helper <*> parseOptions) (
   progDesc "Searches for chord fingering on a given instrument." <>
   header "chord-finder -- find your fingers")
 
+horizConcat :: [String] -> String
+horizConcat = foldr1 horizConcatOne
+  where
+    rectangular :: String -> String
+    rectangular s =
+      let
+        maxLine = maximum $ length <$> lines s
+      in
+        unlines $ (\line -> line ++ replicate (maxLine - length line) ' ') <$> lines s
+    
+    horizConcatOne :: String -> String -> String
+    horizConcatOne str1 str2 =
+      let
+        str1' = lines . rectangular $ str1
+        str2' = lines . rectangular $ str2
+      in
+        unlines $ zipWith (\s1 s2 -> s1 ++ "  " ++ s2) str1' str2'
+
 main :: IO ()
 main = do
   opts <- execParser parserInfoOptions
-  case parse parseChord "interactive" (chordIn opts) of
+  case parse parseModifiedChord "interactive" (chordIn opts) of
     Left bundle -> putStrLn (errorBundlePretty bundle)
     Right chord -> do
-      mapM_ (putStrLn . show) $ search chord (fingerStretch opts) guitar
+      putStrLn . intercalate "\n" . map horizConcat . chunksOf 3 . map show . take (amountToPrint opts) $ search chord (fingerStretch opts) guitar
