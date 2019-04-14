@@ -1,10 +1,10 @@
-name:                chord-finder
-version:             0.1.0.0
-github:              "githubuser/chord-finder"
+name:                cherchord
+version:             1.0.0.0
+github:              "aearnus/cherchord"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2019 Author name here"
+author:              "Tyler"
+maintainer:          "tslimkemann42@gmail.com"
+copyright:           "2019"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/chord-finder#readme>
+description:         Please see the README on GitHub at <https://github.com/aearnus/cherchord>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -31,7 +31,7 @@ library:
   source-dirs: src
 
 executables:
-  chord-finder-exe:
+  cherchord:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -39,10 +39,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - chord-finder
+    - cherchord
 
 tests:
-  chord-finder-test:
+  cherchord-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -50,4 +50,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - chord-finder
+    - cherchord
