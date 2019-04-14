@@ -48,7 +48,7 @@ showFingeringRow :: Int -> Fingering -> String
 showFingeringRow row (Fingering fingers fretboard) =
   intercalate " " $ (\case
       _ | row == 0 -> "-"
-      Just finger | finger == row -> "⬤"
+      Just finger | finger == row -> "●"
       _ -> "|"
   ) <$> fingers
 
