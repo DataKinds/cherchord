@@ -35,7 +35,7 @@ Available options:
   -p,--print-n FINGERINGS  How many fingerings to print? (default: 10000)
   -i,--instrument INSTRUMENT
                            What instrument to show chord diagrams for? Valid
-                           instruments are: guitar, ukulele, or a
+                           instruments are: guitar, ukulele, mandolin, or a
                            comma-delimited list of notes followed by numbers.
                            Example: a guitar can be defined as
                            E16,A16,D16,G16,B16,E16. (default: [E16,A16,D16,G16,B16,E16])

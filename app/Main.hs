@@ -74,9 +74,10 @@ parseModifiedChord = do
 validInstruments :: String -> Either String Fretboard
 validInstruments "guitar" = Right guitar
 validInstruments "ukulele" = Right ukulele
+validInstruments "mandolin" = Right mandolin
 validInstruments i =
   case parse parseInstrument "instrument" i of
-    Left bundle -> Left "Valid instruments are: guitar, ukulele"
+    Left bundle -> Left "Valid instruments are: guitar, ukulele, mandolin"
     Right fretboard -> Right fretboard
   where
     parseInstrument :: InputParser Fretboard
@@ -112,7 +113,7 @@ parseOptions = AppOptions <$>
     value guitar <>
     showDefault <>
     metavar "INSTRUMENT" <>
-    help "What instrument to show chord diagrams for? Valid instruments are: guitar, ukulele, or a comma-delimited list of notes followed by numbers.\nExample: a guitar can be defined as E16,A16,D16,G16,B16,E16.")
+    help "What instrument to show chord diagrams for? Valid instruments are: guitar, ukulele, mandolin, or a comma-delimited list of notes followed by numbers.\nExample: a guitar can be defined as E16,A16,D16,G16,B16,E16.")
 
 parserInfoOptions :: ParserInfo AppOptions
 parserInfoOptions = info (parseOptions <**> helper) (
