@@ -184,3 +184,6 @@ guitar = ($ 16) <$> [Fret E, Fret A, Fret D, Fret G, Fret B, Fret E]
 
 ukulele :: Fretboard
 ukulele = ($ 14) <$> [Fret G, Fret C, Fret E, Fret A]
+
+mandolin :: Fretboard
+mandolin = ($ 16) <$> [Fret G, Fret D, Fret A, Fret E]
