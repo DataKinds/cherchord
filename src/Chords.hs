@@ -95,6 +95,11 @@ aug note = Chord note $ (flip incNote $ note) <$> [0, 4, 8]
 dim :: Note -> Chord
 dim note = Chord note $ (flip incNote $ note) <$> [0, 3, 6]
 
+sus2 :: Note -> Chord
+sus2 note = Chord note $ (flip incNote $ note) <$> [0, 2, 7]
+
+sus4 :: Note -> Chord
+sus4 note = Chord note $ (flip incNote $ note) <$> [0, 5, 7]
 
 slash :: Note -> Chord -> Chord
 slash note (Chord base upper) = Chord base (note:upper)

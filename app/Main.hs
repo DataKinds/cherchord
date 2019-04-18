@@ -42,7 +42,9 @@ parseKey = foldr1 (<|>) $ try <$> [
   string "maj",
   string "min",
   string "dim",
-  string "aug"]
+  string "aug",
+  string "sus2",
+  string "sus4"]
 
 parseBaseChord :: InputParser Chord
 parseBaseChord = do
@@ -53,6 +55,8 @@ parseBaseChord = do
     "min" -> return $ Chords.min note
     "dim" -> return $ dim note
     "aug" -> return $ aug note
+    "sus2" -> return $ sus2 note
+    "sus4" -> return $ sus4 note
 
 parseModifiedChord :: InputParser Chord
 parseModifiedChord = do

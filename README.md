@@ -48,7 +48,7 @@ Chords are input into Cherchord as a note followed by the type of scale, then an
 
 Notes are any of `Ab`, `A`, `Bb`, `C`, `Db`, `D`, `Eb`, `E`, `F`, `Gb`, or `G`.
 
-The scales supported are `maj`, `min`, `dim`, and `aug`.
+The scales supported are `maj`, `min`, `dim`, `aug`, `sus2`, and `sus4`.
 
 Two modifiers are supported: changing the root note of the chord (`/`), and adding extra notes to the chord (`add`). A full example is shown below.
 
