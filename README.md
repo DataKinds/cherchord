@@ -26,13 +26,15 @@ tyler@tyler:~/packages/cherchord$ cherchord --help
 cherchord -- find your fingers
 
 Usage: cherchord CHORD [-f|--finger-stretch FRETS] [-p|--print-n FINGERINGS]
-                 [-i|--instrument INSTRUMENT]
+                 [--horizontal] [-i|--instrument INSTRUMENT]
   Searches for chord fingerings on a given instrument.
 
 Available options:
   -f,--finger-stretch FRETS
                            How far can your fingers stretch? (default: 3)
   -p,--print-n FINGERINGS  How many fingerings to print? (default: 10000)
+  --horizontal             Should we print the chords horizontally? By default,
+                           they are printed vertically.
   -i,--instrument INSTRUMENT
                            What instrument to show chord diagrams for? Valid
                            instruments are: guitar, ukulele, mandolin, or a
@@ -41,7 +43,7 @@ Available options:
                            E16,A16,D16,G16,B16,E16. (default: [E16,A16,D16,G16,B16,E16])
   -h,--help                Show this help text
 
-cherchord v1.0.0.0 (c) 2019 https://github.com/aearnus
+cherchord v1.1.1.0 (c) 2019 https://github.com/aearnus/cherchord
 ```
 
 Chords are input into Cherchord as a note followed by the type of scale, then any number of modifiers.
@@ -83,26 +85,19 @@ E A D G B E   E A D G B E   E A D G B E
 ### Complicated example 
 
 ```
-tyler@tyler:~/packages/cherchord$ cherchord Dminadd9/F -p 5 -f 2 -i ukulele # or -i G14,C14,E14,A14
+tyler@tyler:~/packages/cherchord$ cherchord Dminadd9/F -p 5 -f 2 --horizontal -i ukulele # or -i G14,C14,E14,A14
 found 21 unique fingerings for the chord Dminadd9/F ([F,D,F,A,B])
 printing out 5 of them...
 
-G C E A   G C E A   G C E A 
-2 2 1 0   2 2 1 2   2 2 X 0 
-- - - -   - - - -   - - - - 
-| | ● |   | | ● |   | | | | 
-● ● | |   ● ● | ●   ● ● | | 
-| | | |   | | | |   | | | | 
+A 0 |---  A 2 |-●-  A 0 |---
+E 1 |●--  E 1 |●--  E X |---
+C 2 |-●-  C 2 |-●-  C 2 |-●-
+G 2 |-●-  G 2 |-●-  G 2 |-●-
 
-G C E A   G C E A 
-4 2 X 0   4 5 5 0 
-- - - -   - - - - 
-| | | |   | | | | 
-| ● | |   | | | | 
-| | | |   | | | | 
-● | | |   ● | | | 
-| | | |   | ● ● | 
-          | | | | 
+A 0 |-----  A 0 |------
+E X |-----  E 5 |----●-
+C 2 |-●---  C 5 |----●-
+G 4 |---●-  G 4 |---●--
 ```
 
 ## Happy?

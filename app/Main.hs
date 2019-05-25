@@ -127,7 +127,7 @@ parserInfoOptions = info (parseOptions <**> helper) (
   fullDesc <>
   progDesc "Searches for chord fingerings on a given instrument." <>
   header "cherchord -- find your fingers" <>
-  footer "cherchord v1.0.0.0 (c) 2019 https://github.com/aearnus/cherchord")
+  footer "cherchord v1.1.1.0 (c) 2019 https://github.com/aearnus/cherchord")
 
 horizConcat :: [String] -> String
 horizConcat = foldr1 horizConcatOne
