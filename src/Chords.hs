@@ -37,7 +37,7 @@ data Fret = Fret {
 type Fretboard = [Fret]
 
 instance Show Fret where
-  show (Fret zero len) = (show zero) ++ (show len)
+  show (Fret zero len) = show zero ++ show len
 
 data Fingering = Fingering {
   fingerPos :: [Maybe Int],
@@ -46,7 +46,7 @@ data Fingering = Fingering {
 
 showFingeringRow :: Int -> Fingering -> String
 showFingeringRow row (Fingering fingers fretboard) =
-  intercalate " " $ (\case
+  unwords $ (\case
       _ | row == 0 -> "-"
       Just finger | finger == row -> "●"
       _ -> "|"
@@ -62,7 +62,7 @@ minMaxFingers (Fingering fingers fretboard) =
     if (ma - mi) < 4 then (mi, mi + 3) else ms
 
 rightPad2 :: String -> String
-rightPad2 = \name -> if (length name == 1) then name ++ " " else name
+rightPad2 name = if length name == 1 then name ++ " " else name
 
 instance Show Fingering where
   show f@(Fingering fingers fretboard) =
@@ -70,7 +70,7 @@ instance Show Fingering where
       noteHeader = (rightPad2 . show . fretZero) =<< fretboard
       muteHeader = (rightPad2 . maybe "X" show) =<< fingers
       (minFinger, maxFinger) = minMaxFingers f
-      strings = (flip showFingeringRow) f <$> [minFinger..maxFinger]
+      strings = flip showFingeringRow f <$> [minFinger..maxFinger]
     in
       unlines (noteHeader:muteHeader:strings)
 
@@ -84,22 +84,22 @@ incNote :: Int -> Note -> Note
 incNote n = foldr (.) id $ replicate n succ
 
 maj :: Note -> Chord
-maj note = Chord note $ (flip incNote $ note) <$> [0, 4, 7]
+maj note = Chord note $ (`incNote` note) <$> [0, 4, 7]
 
 min :: Note -> Chord
-min note = Chord note $ (flip incNote $ note) <$> [0, 3, 7]
+min note = Chord note $ (`incNote` note) <$> [0, 3, 7]
 
 aug :: Note -> Chord
-aug note = Chord note $ (flip incNote $ note) <$> [0, 4, 8]
+aug note = Chord note $ (`incNote` note) <$> [0, 4, 8]
 
 dim :: Note -> Chord
-dim note = Chord note $ (flip incNote $ note) <$> [0, 3, 6]
+dim note = Chord note $ (`incNote` note) <$> [0, 3, 6]
 
 sus2 :: Note -> Chord
-sus2 note = Chord note $ (flip incNote $ note) <$> [0, 2, 7]
+sus2 note = Chord note $ (`incNote` note) <$> [0, 2, 7]
 
 sus4 :: Note -> Chord
-sus4 note = Chord note $ (flip incNote $ note) <$> [0, 5, 7]
+sus4 note = Chord note $ (`incNote` note) <$> [0, 5, 7]
 
 slash :: Note -> Chord -> Chord
 slash note (Chord base upper) = Chord base (note:upper)
@@ -128,14 +128,14 @@ isChord chord (Fingering fingers frets) =
 okayNote :: Chord -> (Int, Int) -> Fret -> Bool
 okayNote chord interval@(mi, ma) fret =
   let
-    everyPossibleNote = S.fromList $ (flip incNote $ (fretZero fret)) <$> 0:[mi..ma]
+    everyPossibleNote = S.fromList $ (`incNote` fretZero fret) <$> 0:[mi..ma]
     everyNeededNote = S.fromList (upperNotes chord)
   in
     not . null $ everyNeededNote `S.intersection` everyPossibleNote
 
 -- | Can we produce a chord within some interval of fingering?
 isChordPossible :: Chord -> (Int, Int) -> Fretboard -> Int -> Bool
-isChordPossible chord interval@(mi, ma) frets maximumMutes = (length $ filter not (okayNote chord interval <$> frets)) <= maximumMutes
+isChordPossible chord interval@(mi, ma) frets maximumMutes = length (filter not (okayNote chord interval <$> frets)) <= maximumMutes
 
 -- | If there's a version of `specific` in the list of fingerings
 -- | that _isn't_ muted as much, then the more muted version is redundant.
@@ -148,20 +148,20 @@ cartesianChordOn :: (Int, Int) -> Int -> Chord -> Fretboard -> [Fingering]
 cartesianChordOn interval@(mi, ma) maxMutes chord frets =
   let
     -- We leave the opportunity for this string to possibly be muted.
-    unorderedIncrementList = (\fret -> (validNoteIncrements chord (fretZero fret))) <$> frets
+    unorderedIncrementList = validNoteIncrements chord . fretZero <$> frets
     -- Then we filter to make sure that _too_ many strings aren't muted.
     -- An interesting edge case -- a completely muted instrument can sound like any chord ;)
-    cartesianIncrements = filter (\fs -> (length fs) - (length $ catMaybes fs) <= maxMutes) $ sequence unorderedIncrementList
+    cartesianIncrements = filter (\fs -> length fs - length (catMaybes fs) <= maxMutes) $ sequence unorderedIncrementList
     -- Now, we remove all the fingerings that have a mute but really shouldn't
     -- This runs in O(n^2) time & space but it shouldn't matter because chords only have ~100 fingerings
     -- If it's ever a problem, though, refactor this!!
     minMuteIncrements = filter (isntRedundant cartesianIncrements) cartesianIncrements
   in
-    (\fingers -> Fingering fingers frets) <$> minMuteIncrements
+    (`Fingering` frets) <$> minMuteIncrements
   where
     -- The muted string is _always_ valid
     validNoteIncrements :: Chord -> Note -> [Maybe Int]
-    validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> (incNote inc basenote) `elem` (upperNotes chord)) (nub $ 0:[mi..ma]))
+    validNoteIncrements chord basenote = Nothing:(Just <$> filter (\inc -> incNote inc basenote `elem` upperNotes chord) (nub $ 0:[mi..ma]))
 
 -- | Is this fingering kinda too awkward to do?
 -- | Right now, the only criteria is that it has a mute surrounded by non-zero fingerings
@@ -179,8 +179,8 @@ search chord maxInterval frets =
   let
     maxMutes = length frets `div` 4
     -- TODO: CHANGE THIS LINE
-    intervals = zip [0 .. ((fretLength $ head frets) - maxInterval)] [maxInterval .. (fretLength $ head frets)]
-    okayIntervals = filter (\interval -> isChordPossible chord interval frets maxMutes) $ intervals
+    intervals = zip [0 .. fretLength (head frets) - maxInterval] [maxInterval .. (fretLength $ head frets)]
+    okayIntervals = filter (\interval -> isChordPossible chord interval frets maxMutes) intervals
   in
     nub $ filter (not . isAwkward) $ (\interval -> cartesianChordOn interval maxMutes chord frets) =<< okayIntervals
 
