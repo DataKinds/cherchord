@@ -82,7 +82,7 @@ showHorizontally f@(Fingering fingers fretboard) =
     renderFret :: Fret -> String
     renderFret = rightPad2 . show . fretZero
     renderFinger :: Maybe Int -> String
-    renderFinger = runKleisli $ foldr1 (<+>) . fmap Kleisli $ 
+    renderFinger = runKleisli $ foldl1 (<+>) . fmap Kleisli $ 
       [ rightPad2 . maybe "X" show
       , const "|"
       , \case 
@@ -90,7 +90,7 @@ showHorizontally f@(Fingering fingers fretboard) =
                 Just finger -> replicate (finger - minFinger - 1) '-' ++ "●" ++ replicate (maxFinger - finger) '-'
                 Nothing -> replicate (maxFinger - minFinger) '-' ]
   in
-    unlines $ zipWith (\finger fret -> renderFret fret ++ renderFinger finger) fingers fretboard 
+    unlines . reverse $ zipWith (\finger fret -> renderFret fret ++ renderFinger finger) fingers fretboard 
 
 instance Eq Fingering where
   (==) (Fingering fingers frets) (Fingering fingers' frets') = fingers == fingers'
