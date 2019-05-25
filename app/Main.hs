@@ -19,6 +19,7 @@ data AppOptions = AppOptions {
   chordIn :: String,
   fingerStretch :: Int,
   amountToPrint :: Int,
+  isHorizontal :: Bool,
   instrument :: Fretboard
 }
 
@@ -62,7 +63,7 @@ parseModifiedChord :: InputParser Chord
 parseModifiedChord = do
   base <- parseBaseChord
   modifiers <- Text.Megaparsec.many (try parseSlash <|> try parseAdd)
-  return $ (foldr (.) id modifiers) base
+  return $ foldr (.) id modifiers base
   where
     parseSlash :: InputParser (Chord -> Chord)
     parseSlash = do
@@ -91,8 +92,7 @@ validInstruments i =
             num <- Text.Megaparsec.some digitChar
             optional $ char ','
             return $ Fret note (read num)
-      frets <- Text.Megaparsec.some parseFret
-      return frets
+      Text.Megaparsec.some parseFret
       
 parseOptions :: Parser AppOptions
 parseOptions = AppOptions <$>
@@ -111,6 +111,9 @@ parseOptions = AppOptions <$>
     showDefault <>
     metavar "FINGERINGS" <>
     help "How many fingerings to print?") <*>
+  Options.Applicative.switch (
+    long "horizontal" <>
+    help "Should we print the chords horizontally? By default, they are printed vertically.") <*>
   Options.Applicative.option (eitherReader validInstruments) (
     long "instrument" <>
     short 'i' <>
