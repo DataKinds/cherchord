@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: da6f75586fa72115b02b145503030dd11dc7564d3d032d8ec32655e128198554
+-- hash: 6a4dcf03e8b7b6cbca162aae1492708c45f1a6f473cb49d1a139568dffb0fee0
 
 name:           cherchord
-version:        1.0.0.0
+version:        1.1.0.0
 description:    Please see the README on GitHub at <https://github.com/aearnus/cherchord>
 homepage:       https://github.com/aearnus/cherchord#readme
 bug-reports:    https://github.com/aearnus/cherchord/issues

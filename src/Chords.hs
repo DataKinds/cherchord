@@ -8,6 +8,7 @@ import Data.List
 import Data.Maybe
 import qualified Data.Set as S
 import Debug.Trace
+import Control.Arrow
 
 -- ## DECLARATIONS ## --
 
@@ -73,6 +74,23 @@ instance Show Fingering where
       strings = flip showFingeringRow f <$> [minFinger..maxFinger]
     in
       unlines (noteHeader:muteHeader:strings)
+
+showHorizontally :: Fingering -> String
+showHorizontally f@(Fingering fingers fretboard) =
+  let
+    (minFinger, maxFinger) = minMaxFingers f
+    renderFret :: Fret -> String
+    renderFret = rightPad2 . show . fretZero
+    renderFinger :: Maybe Int -> String
+    renderFinger = runKleisli $ foldr1 (<+>) . fmap Kleisli $ 
+      [ rightPad2 . maybe "X" show
+      , const "|"
+      , \case 
+                Just 0 -> replicate (maxFinger - minFinger) '-'
+                Just finger -> replicate (finger - minFinger - 1) '-' ++ "●" ++ replicate (maxFinger - finger) '-'
+                Nothing -> replicate (maxFinger - minFinger) '-' ]
+  in
+    unlines $ zipWith (\finger fret -> renderFret fret ++ renderFinger finger) fingers fretboard 
 
 instance Eq Fingering where
   (==) (Fingering fingers frets) (Fingering fingers' frets') = fingers == fingers'

@@ -168,4 +168,5 @@ main = do
       setSGR [SetColor Foreground Dull Blue]
       putStrLn $ "printing out " ++ show (Prelude.min (amountToPrint opts) (length chords)) ++ " of them...\n"
       setSGR [Reset]
-      putStrLn . intercalate "\n" . map horizConcat . chunksOf 3 . map show . take (amountToPrint opts) $ chords
+      let whichShow = if isHorizontal opts then showHorizontally else show
+      putStrLn . intercalate "\n" . map horizConcat . chunksOf 3 . map whichShow . take (amountToPrint opts) $ chords
