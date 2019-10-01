@@ -210,3 +210,9 @@ ukulele = ($ 14) <$> [Fret G, Fret C, Fret E, Fret A]
 
 mandolin :: Fretboard
 mandolin = ($ 16) <$> [Fret G, Fret D, Fret A, Fret E]
+
+bouzouki :: Fretboard
+bouzouki = ($ 16) <$> [Fret C, Fret F, Fret A, Fret D]
+
+baglamas :: Fretboard
+baglamas = ($ 14) <$> [Fret D, Fret A, Fret D]
