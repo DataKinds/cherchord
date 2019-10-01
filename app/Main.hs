@@ -13,6 +13,8 @@ import System.IO
 import Options.Applicative
 import Data.Semigroup ((<>))
 import System.Console.ANSI
+import Paths_cherchord (version)
+import Data.Version (showVersion)
 
 type InputParser = Parsec Void String
 data AppOptions = AppOptions {
@@ -127,7 +129,7 @@ parserInfoOptions = info (parseOptions <**> helper) (
   fullDesc <>
   progDesc "Searches for chord fingerings on a given instrument." <>
   header "cherchord -- find your fingers" <>
-  footer "cherchord v1.1.1.0 (c) 2019 https://github.com/aearnus/cherchord")
+  footer ("cherchord v" ++ showVersion version ++ " (c) 2019 https://github.com/aearnus/cherchord"))
 
 horizConcat :: [String] -> String
 horizConcat = foldr1 horizConcatOne
