@@ -6,7 +6,7 @@ import System.IO
 import Options.Applicative (customExecParser, prefs, showHelpOnEmpty)
 import Data.Semigroup ((<>))
 import System.Console.ANSI
-import Text.Megaparsec (parse)
+import Text.Megaparsec (parse, eof)
 import Text.Megaparsec.Error (errorBundlePretty)
 import qualified Data.Text as Text (unpack)
 
@@ -37,13 +37,15 @@ horizConcat = foldr1 horizConcatOne
 main :: IO ()
 main = do
   opts <- customExecParser (prefs showHelpOnEmpty) A.parserInfoOptions
-  case parse P.parseModifiedChord "chord" (A.chordIn opts) of
+  case parse (P.parseModifiedChord <* eof) "chord" (A.chordIn opts) of
     Left bundle -> putStrLn (errorBundlePretty bundle)
     Right chord -> do
       let chords = C.search chord (A.fingerStretch opts) (A.instrument opts)
           printCount = A.amountToPrint opts
           whichShow = if A.isHorizontal opts then C.showHorizontally else show
-          horizontalCount = if A.isHorizontal opts then 6 else 4
+          horizontalCount = if A.amountToPrintInRow opts < 0 
+            then if A.isHorizontal opts then 6 else 4
+            else A.amountToPrintInRow opts
       setSGR [SetColor Foreground Dull Blue]
       putStr "found "
       setSGR [SetColor Foreground Vivid Blue]

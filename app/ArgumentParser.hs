@@ -16,6 +16,7 @@ data AppOptions = AppOptions {
   chordIn :: String,
   fingerStretch :: Int,
   amountToPrint :: Int,
+  amountToPrintInRow :: Int,
   isHorizontal :: Bool,
   instrument :: Fretboard
 }
@@ -48,6 +49,13 @@ parseOptions = AppOptions <$>
     showDefault <>
     metavar "FINGERINGS" <>
     help "How many fingerings to print?") <*>
+  Options.Applicative.option auto (
+    long "row-size" <>
+    short 'r' <>
+    value (-1) <>
+    showDefault <>
+    metavar "COUNT" <>
+    help "How many fingerings to put in a row? Lower this number if your terminal is narrow. Set it to -1 to attempt to autosize.") <*>
   Options.Applicative.switch (
     long "horizontal" <>
     help "Should we print the chords horizontally? By default, they are printed vertically.") <*>

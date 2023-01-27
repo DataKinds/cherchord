@@ -10,6 +10,7 @@
 * ([#5](https://github.com/DataKinds/cherchord/issues/5)) Always print the help screen if no arguments are provided.
 * Accept bare chords like `C` to mean a C major chord.
 * Accept sharps on notes as well as flats!
+* Implement `-r/--row-size` for displaying correctly in narrow terminals
 
 # 1.2.0
 
