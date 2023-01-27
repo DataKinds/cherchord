@@ -43,12 +43,12 @@ Available options:
                            E16,A16,D16,G16,B16,E16. (default: [E16,A16,D16,G16,B16,E16])
   -h,--help                Show this help text
 
-cherchord v1.1.1.0 (c) 2019 https://github.com/aearnus/cherchord
+cherchord v1.3.0 (c) 2023 https://github.com/DataKinds/cherchord
 ```
 
 Chords are input into Cherchord as a note followed by the type of scale, then any number of modifiers.
 
-Notes are any of `Ab`, `A`, `Bb`, `C`, `Db`, `D`, `Eb`, `E`, `F`, `Gb`, or `G`.
+Notes are any of `Ab`, `A`, `Bb`, `B`, `C`, `Db`, `D`, `Eb`, `E`, `F`, `Gb`, or `G`.
 
 The scales supported are `maj`, `min`, `dim`, `aug`, `sus2`, and `sus4`.
 
