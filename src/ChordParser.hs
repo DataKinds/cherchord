@@ -11,18 +11,28 @@ type InputParser = Parsec Void String
 
 parseNote :: InputParser Note
 parseNote = foldr1 (<|>) $ try <$> [
-  string "Ab" >> return Ab,
-  string "A" >> return A,
-  string "Bb" >> return Bb,
-  string "B" >> return B,
-  string "C" >> return C,
-  string "Db" >> return Db,
-  string "D" >> return D,
-  string "Eb" >> return Eb,
-  string "E" >> return E,
-  string "F" >> return F,
-  string "Gb" >> return Gb,
-  string "G" >> return G]
+    string "Ab" >> return Ab,
+    string "A#" >> return Bb,
+    string "A" >> return A,
+    string "Bb" >> return Bb,
+    string "B#" >> return C,
+    string "B" >> return B,
+    string "Cb" >> return B,
+    string "C#" >> return Db,
+    string "C" >> return C,
+    string "Db" >> return Db,
+    string "D#" >> return Eb,
+    string "D" >> return D,
+    string "Eb" >> return Eb,
+    string "E#" >> return F,
+    string "E" >> return E,
+    string "Fb" >> return E,
+    string "F#" >> return Gb,
+    string "F" >> return F,
+    string "Gb" >> return Gb,
+    string "G#" >> return Ab,
+    string "G" >> return G
+  ]
 
 parseKey :: InputParser String
 parseKey = foldr1 (<|>) $ try <$> [

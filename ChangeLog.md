@@ -9,6 +9,7 @@
 * Print 4 chords in a row if vertical, or 6 in a row if horizontal.
 * ([#5](https://github.com/DataKinds/cherchord/issues/5)) Always print the help screen if no arguments are provided.
 * Accept bare chords like `C` to mean a C major chord.
+* Accept sharps on notes as well as flats!
 
 # 1.2.0
 
