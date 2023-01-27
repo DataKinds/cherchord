@@ -1,31 +1,33 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d28fc0542bce7bd37fd98df1dbf35f935f300386e76d99185040144864626d67
+-- hash: 7ac88a30578760fe72dbde2f6cf36be35ef4ced926f8aec4766f52f942378374
 
 name:           cherchord
-version:        1.2.0
-description:    Please see the README on GitHub at <https://github.com/aearnus/cherchord>
-homepage:       https://github.com/aearnus/cherchord#readme
-bug-reports:    https://github.com/aearnus/cherchord/issues
+version:        1.3.0
+description:    Please see the README on GitHub at <https://github.com/DataKinds/cherchord>
+homepage:       https://github.com/DataKinds/cherchord#readme
+bug-reports:    https://github.com/DataKinds/cherchord/issues
 author:         Tyler
 maintainer:     tslimkemann42@gmail.com
 copyright:      2019
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    ChangeLog.md
     README.md
+    ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/aearnus/cherchord
+  location: https://github.com/DataKinds/cherchord
 
 library
   exposed-modules:
+      ChordParser
       Chords
   other-modules:
       Paths_cherchord
@@ -36,16 +38,20 @@ library
     , base >=4.7 && <5
     , containers
     , megaparsec
+    , neat-interpolation
     , optparse-applicative
     , split
+    , text
   default-language: Haskell2010
 
 executable cherchord
   main-is: Main.hs
   other-modules:
+      ArgumentParser
       Paths_cherchord
   hs-source-dirs:
       app
+  default-extensions: ApplicativeDo QuasiQuotes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       ansi-terminal
@@ -53,8 +59,10 @@ executable cherchord
     , cherchord
     , containers
     , megaparsec
+    , neat-interpolation
     , optparse-applicative
     , split
+    , text
   default-language: Haskell2010
 
 test-suite cherchord-test
@@ -71,6 +79,8 @@ test-suite cherchord-test
     , cherchord
     , containers
     , megaparsec
+    , neat-interpolation
     , optparse-applicative
     , split
+    , text
   default-language: Haskell2010
