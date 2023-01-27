@@ -49,7 +49,7 @@ showFingeringRow :: Int -> Fingering -> String
 showFingeringRow row (Fingering fingers fretboard) =
   unwords $ (\case
       _ | row == 0 -> "-"
-      Just finger | finger == row -> "●"
+      Just finger | finger == row -> "o"
       _ -> "|"
   ) <$> fingers
 
@@ -87,7 +87,7 @@ showHorizontally f@(Fingering fingers fretboard) =
       , const "|"
       , \case 
                 Just 0 -> replicate (maxFinger - minFinger) '-'
-                Just finger -> replicate (finger - minFinger - 1) '-' ++ "●" ++ replicate (maxFinger - finger) '-'
+                Just finger -> replicate (finger - minFinger - 1) '-' ++ "o" ++ replicate (maxFinger - finger) '-'
                 Nothing -> replicate (maxFinger - minFinger) '-' ]
   in
     unlines . reverse $ zipWith (\finger fret -> renderFret fret ++ renderFinger finger) fingers fretboard 
