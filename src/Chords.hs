@@ -119,8 +119,8 @@ sus2 note = Chord note $ (`incNote` note) <$> [0, 2, 7]
 sus4 :: Note -> Chord
 sus4 note = Chord note $ (`incNote` note) <$> [0, 5, 7]
 
-slash :: Note -> Chord -> Chord
-slash note (Chord base upper) = Chord base (note:upper)
+slash :: Chord -> Note -> Chord
+slash (Chord _ upper) base = Chord base upper
 
 add :: Int -> Chord -> Chord
 add num (Chord base upper) = Chord base (upper ++ [incNote num base])

@@ -34,29 +34,21 @@ parseNote = foldr1 (<|>) $ try <$> [
     string "G" >> return G
   ]
 
-parseKey :: InputParser String
-parseKey = foldr1 (<|>) $ try <$> [
-  string "maj",
-  string "min",
-  string "dim",
-  string "aug",
-  string "sus2",
-  string "sus4",
-  string ""]
+parseMod :: InputParser (Note -> Chord)
+parseMod = foldr1 (<|>) $ try <$> [
+  string "maj" >> pure maj,
+  string "min" >> pure Chords.min,
+  string "dim" >> pure dim,
+  string "aug" >> pure aug,
+  string "sus2" >> pure sus2,
+  string "sus4" >> pure sus4,
+  string ""  >> pure maj]
 
 parseBaseChord :: InputParser Chord
 parseBaseChord = do
   note <- parseNote
-  key <- parseKey
-  case key of
-    "maj" -> return $ maj note
-    "" -> return $ maj note
-    "min" -> return $ Chords.min note
-    "dim" -> return $ dim note
-    "aug" -> return $ aug note
-    "sus2" -> return $ sus2 note
-    "sus4" -> return $ sus4 note
-
+  mod <- parseMod
+  return $ mod note
 parseModifiedChord :: InputParser Chord
 parseModifiedChord = do
   base <- parseBaseChord
@@ -67,7 +59,7 @@ parseModifiedChord = do
     parseSlash = do
       string "/"
       note <- parseNote
-      return $ slash note
+      pure (`slash` note)
     parseAdd :: InputParser (Chord -> Chord)
     parseAdd = do
       string "add"
